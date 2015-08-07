@@ -1,6 +1,6 @@
 var app = angular.module('statelessApp', []).factory('TokenStorage', function() {
 	var storageKey = 'auth_token';
-	return {		
+	return {
 		store : function(token) {
 			return localStorage.setItem(storageKey, token);
 		},
@@ -34,13 +34,13 @@ var app = angular.module('statelessApp', []).factory('TokenStorage', function() 
 app.controller('AuthCtrl', function ($scope, $http, TokenStorage) {
 	$scope.authenticated = false;
 	$scope.token; // For display purposes only
-	
+
 	$scope.init = function () {
 		$http.get('/api/users/current').success(function (user) {
 			if(user.username !== 'anonymousUser'){
 				$scope.authenticated = true;
 				$scope.username = user.username;
-				
+
 				// For display purposes only
 				$scope.token = JSON.parse(atob(TokenStorage.retrieve().split('.')[0]));
 			}
@@ -51,15 +51,18 @@ app.controller('AuthCtrl', function ($scope, $http, TokenStorage) {
 		$http.post('/api/login', { username: $scope.username, password: $scope.password }).success(function (result, status, headers) {
 			$scope.authenticated = true;
 			TokenStorage.store(headers('X-AUTH-TOKEN'));
-			
+
 			// For display purposes only
 			$scope.token = JSON.parse(atob(TokenStorage.retrieve().split('.')[0]));
-		});  
+		}).error(function( status, headers, config) {
+         // this isn't happening:
+         alert("Usuario no valido");
+    });
 	};
 
 	$scope.logout = function () {
 		// Just clear the local storage
-		TokenStorage.clear();	
+		TokenStorage.clear();
 		$scope.authenticated = false;
 	};
 });
